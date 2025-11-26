@@ -1,94 +1,116 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.0.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "HTTP API",
+    "version": "1.0.0",
+    "description": "This service distributes your order flow through a network of globally distributed, parallelized routing paths, delivering low-latency execution via Polymarket's [CLOB API](https://docs.polymarket.com/quickstart/introduction/main)."
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
+      "url": "https://poly.drive.markets"
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
+    "/order": {
+      "post": {
+        "summary": "Place Single Order",
+        "description": "Create and place a single order.",
+        "tags": [
+          "Create Order"
+        ],
         "parameters": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
+            "$ref": "#/components/parameters/L2HeaderApiKey"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderSignature"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderTimestamp"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderNonce"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaceOrderPayload"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Order placement response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
+                  "$ref": "#/components/schemas/OrderResponse"
                 }
               }
             }
           },
           "400": {
-            "description": "Unexpected error",
+            "description": "Invalid order or bad request",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           }
         }
       },
-      "post": {
-        "description": "Creates a new plant in the store",
+      "delete": {
+        "summary": "Cancel Single Order",
+        "description": "Cancel a single order by ID.",
+        "tags": [
+          "Cancel Order"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/L2HeaderApiKey"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderSignature"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderTimestamp"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderNonce"
+          }
+        ],
         "requestBody": {
-          "description": "Plant to add to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                "type": "object",
+                "required": [
+                  "orderID"
+                ],
+                "properties": {
+                  "orderID": {
+                    "type": "string",
+                    "description": "ID of order to cancel"
+                  }
                 }
               }
             }
-          },
-          "400": {
-            "description": "unexpected error",
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cancellation response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/CancelResponse"
                 }
               }
             }
@@ -96,121 +118,436 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/orders": {
+      "post": {
+        "summary": "Place Multiple Orders (Batching)",
+        "description": "Place up to 15 orders in a single request.",
+        "tags": [
+          "Create Order"
+        ],
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
+            "$ref": "#/components/parameters/L2HeaderApiKey"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderSignature"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderTimestamp"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderNonce"
           }
         ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
         "requestBody": {
-          "description": "Plant added to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PostOrder"
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Batch order placement response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid orders or bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancel Multiple Orders",
+        "description": "Cancel multiple orders by providing a list of order IDs.",
+        "tags": [
+          "Cancel Order"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/L2HeaderApiKey"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderSignature"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderTimestamp"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderNonce"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "IDs of the orders to cancel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cancellation response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cancel-all": {
+      "delete": {
+        "summary": "Cancel ALL Orders",
+        "description": "Cancel all open orders posted by the user.",
+        "tags": [
+          "Cancel Order"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/L2HeaderApiKey"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderSignature"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderTimestamp"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderNonce"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancellation response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cancel-market-orders": {
+      "delete": {
+        "summary": "Cancel orders from market",
+        "description": "Cancel orders from a specific market.",
+        "tags": [
+          "Cancel Order"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/L2HeaderApiKey"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderSignature"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderTimestamp"
+          },
+          {
+            "$ref": "#/components/parameters/L2HeaderNonce"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "market": {
+                    "type": "string",
+                    "description": "Condition ID of the market"
+                  },
+                  "asset_id": {
+                    "type": "string",
+                    "description": "ID of the asset/token"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cancellation response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelResponse"
+                }
+              }
+            }
           }
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
+    "parameters": {
+      "L2HeaderApiKey": {
+        "in": "header",
+        "name": "POLY-API-KEY",
+        "schema": {
+          "type": "string"
+        },
+        "required": true,
+        "description": "API key of the user"
       },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
+      "L2HeaderSignature": {
+        "in": "header",
+        "name": "POLY-SIGNATURE",
+        "schema": {
+          "type": "string"
+        },
+        "required": true,
+        "description": "Request signature"
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
+      "L2HeaderTimestamp": {
+        "in": "header",
+        "name": "POLY-TIMESTAMP",
+        "schema": {
+          "type": "string"
+        },
+        "required": true,
+        "description": "Timestamp of the request"
+      },
+      "L2HeaderNonce": {
+        "in": "header",
+        "name": "POLY-NONCE",
+        "schema": {
+          "type": "string"
+        },
+        "required": true,
+        "description": "Request nonce"
       }
     },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+    "schemas": {
+      "PlaceOrderPayload": {
+        "type": "object",
+        "required": [
+          "order",
+          "owner",
+          "orderType"
+        ],
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/OrderObject"
+          },
+          "owner": {
+            "type": "string",
+            "description": "API key of order owner"
+          },
+          "orderType": {
+            "type": "string",
+            "enum": [
+              "FOK",
+              "GTC",
+              "GTD",
+              "FAK"
+            ],
+            "description": "Order type"
+          }
+        }
+      },
+      "PostOrder": {
+        "type": "object",
+        "required": [
+          "order",
+          "orderType",
+          "owner"
+        ],
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/OrderObject"
+          },
+          "orderType": {
+            "type": "string",
+            "enum": [
+              "FOK",
+              "GTC",
+              "GTD",
+              "FAK"
+            ]
+          },
+          "owner": {
+            "type": "string",
+            "description": "API key of order owner"
+          }
+        }
+      },
+      "OrderObject": {
+        "type": "object",
+        "required": [
+          "salt",
+          "maker",
+          "signer",
+          "taker",
+          "tokenId",
+          "makerAmount",
+          "takerAmount",
+          "expiration",
+          "nonce",
+          "feeRateBps",
+          "side",
+          "signatureType",
+          "signature"
+        ],
+        "properties": {
+          "salt": {
+            "type": "integer",
+            "description": "Random salt used to create unique order"
+          },
+          "maker": {
+            "type": "string",
+            "description": "Maker address (funder)"
+          },
+          "signer": {
+            "type": "string",
+            "description": "Signing address"
+          },
+          "taker": {
+            "type": "string",
+            "description": "Taker address (operator)"
+          },
+          "tokenId": {
+            "type": "string",
+            "description": "ERC1155 token ID of conditional token being traded"
+          },
+          "makerAmount": {
+            "type": "string",
+            "description": "Maximum amount maker is willing to spend"
+          },
+          "takerAmount": {
+            "type": "string",
+            "description": "Minimum amount taker will pay the maker in return"
+          },
+          "expiration": {
+            "type": "string",
+            "description": "Unix expiration timestamp"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "Maker's exchange nonce of the order is associated"
+          },
+          "feeRateBps": {
+            "type": "string",
+            "description": "Fee rate basis points as required by the operator"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "BUY",
+              "SELL"
+            ],
+            "description": "Buy or sell enum index"
+          },
+          "signatureType": {
+            "type": "integer",
+            "description": "Signature type enum index"
+          },
+          "signature": {
+            "type": "string",
+            "description": "Hex encoded signature"
+          }
+        }
+      },
+      "OrderResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Boolean indicating if server-side error (success = false)"
+          },
+          "errorMsg": {
+            "type": "string",
+            "description": "Error message in case of unsuccessful placement"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "ID of order"
+          },
+          "orderHashes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Hash of settlement transaction order was marketable and triggered a match"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "matched",
+              "live",
+              "delayed",
+              "unmatched"
+            ],
+            "description": "Status of the order placement"
+          }
+        }
+      },
+      "CancelResponse": {
+        "type": "object",
+        "properties": {
+          "canceled": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of canceled order IDs"
+          },
+          "not_canceled": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Map of order ID to reason why it couldn't be canceled"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "errorMsg": {
+            "type": "string",
+            "description": "Description of the error"
+          }
+        }
       }
     }
   }
