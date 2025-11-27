@@ -3,8 +3,9 @@
   "theme": "maple",
   "name": "drive.markets",
   "colors": {
-    "primary": "#FF4000"
-
+    "primary": "#FF4000",
+	"light": "#FF4000",
+	"dark": "#FF4000"
   },
   "favicon": "/favicon.ico",
   "api": {
