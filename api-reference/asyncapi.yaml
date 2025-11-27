@@ -1,0 +1,527 @@
+asyncapi: 3.0.0
+info:
+  title: WebSockets API
+  version: 1.0.0
+servers:
+  production:
+    host: poly.drive.markets/ws
+    protocol: wss
+    description: Production
+channels:
+  order:
+    address: order
+    messages:
+      publish.message.0:
+        $ref: '#/components/messages/PlaceOrderMessage'
+      publish.message.1:
+        $ref: '#/components/messages/CancelOrderMessage'
+      subscribe.message:
+        $ref: '#/components/messages/ResponseMessage'
+  orders:
+    address: orders
+    messages:
+      publish.message.0:
+        $ref: '#/components/messages/PlaceOrdersMessage'
+      publish.message.1:
+        $ref: '#/components/messages/CancelOrdersMessage'
+      subscribe.message:
+        $ref: '#/components/messages/ResponseMessage'
+  cancel-all:
+    address: cancel-all
+    messages:
+      publish.message:
+        $ref: '#/components/messages/CancelAllOrdersMessage'
+      subscribe.message:
+        $ref: '#/components/messages/ResponseMessage'
+  cancel-market-orders:
+    address: cancel-market-orders
+    messages:
+      publish.message:
+        $ref: '#/components/messages/CancelMarketOrdersMessage'
+      subscribe.message:
+        $ref: '#/components/messages/ResponseMessage'
+operations:
+  order.publish:
+    action: receive
+    channel:
+      $ref: '#/channels/order'
+    messages:
+      - $ref: '#/channels/order/messages/publish.message.0'
+      - $ref: '#/channels/order/messages/publish.message.1'
+  order.subscribe:
+    action: send
+    channel:
+      $ref: '#/channels/order'
+    messages:
+      - $ref: '#/channels/order/messages/subscribe.message'
+  orders.publish:
+    action: receive
+    channel:
+      $ref: '#/channels/orders'
+    messages:
+      - $ref: '#/channels/orders/messages/publish.message.0'
+      - $ref: '#/channels/orders/messages/publish.message.1'
+  orders.subscribe:
+    action: send
+    channel:
+      $ref: '#/channels/orders'
+    messages:
+      - $ref: '#/channels/orders/messages/subscribe.message'
+  cancel-all.publish:
+    action: receive
+    channel:
+      $ref: '#/channels/cancel-all'
+    messages:
+      - $ref: '#/channels/cancel-all/messages/publish.message'
+  cancel-all.subscribe:
+    action: send
+    channel:
+      $ref: '#/channels/cancel-all'
+    messages:
+      - $ref: '#/channels/cancel-all/messages/subscribe.message'
+  cancel-market-orders.publish:
+    action: receive
+    channel:
+      $ref: '#/channels/cancel-market-orders'
+    messages:
+      - $ref: '#/channels/cancel-market-orders/messages/publish.message'
+  cancel-market-orders.subscribe:
+    action: send
+    channel:
+      $ref: '#/channels/cancel-market-orders'
+    messages:
+      - $ref: '#/channels/cancel-market-orders/messages/subscribe.message'
+components:
+  messages:
+    PlaceOrderMessage:
+      name: PlaceOrder
+      title: Place Single Order
+      description: >
+        Create and place a single order.
+
+
+        [Polymarket
+        Docs](https://docs.polymarket.com/developers/CLOB/orders/create-order)
+      tags:
+        - name: Create Order
+      payload:
+        $ref: '#/components/schemas/PlaceOrderRequest'
+    PlaceOrdersMessage:
+      name: PlaceOrders
+      title: Place Multiple Orders
+      description: >
+        Place up to 15 orders in a single request.
+
+
+        [Polymarket
+        Docs](https://docs.polymarket.com/developers/CLOB/orders/create-order-batch)
+      tags:
+        - name: Create Order
+      payload:
+        $ref: '#/components/schemas/PlaceOrdersRequest'
+    CancelOrderMessage:
+      name: CancelOrder
+      title: Cancel Single Order
+      description: >
+        Cancel a single order by ID.
+
+
+        [Polymarket
+        Docs](https://docs.polymarket.com/developers/CLOB/orders/cancel-orders#cancel-an-single-order)
+      tags:
+        - name: Cancel Order
+      payload:
+        $ref: '#/components/schemas/CancelOrderRequest'
+    CancelOrdersMessage:
+      name: CancelOrders
+      title: Cancel Multiple Orders
+      description: >
+        Cancel multiple orders by ID.
+
+
+        [Polymarket
+        Docs](https://docs.polymarket.com/developers/CLOB/orders/cancel-orders#cancel-multiple-orders)
+      tags:
+        - name: Cancel Order
+      payload:
+        $ref: '#/components/schemas/CancelOrdersRequest'
+    CancelAllOrdersMessage:
+      name: CancelAllOrders
+      title: Cancel ALL Orders
+      description: >
+        Cancel all open orders posted by the user.
+
+
+        [Polymarket
+        Docs](https://docs.polymarket.com/developers/CLOB/orders/cancel-orders#cancel-all-orders)
+      tags:
+        - name: Cancel Order
+      payload:
+        $ref: '#/components/schemas/CancelAllOrdersRequest'
+    CancelMarketOrdersMessage:
+      name: CancelMarketOrders
+      title: Cancel Market Orders
+      description: >
+        Cancel orders from a specific market.
+
+
+        [Polymarket
+        Docs](https://docs.polymarket.com/developers/CLOB/orders/cancel-orders#cancel-orders-from-market)
+      tags:
+        - name: Cancel Order
+      payload:
+        $ref: '#/components/schemas/CancelMarketOrdersRequest'
+    ResponseMessage:
+      name: Response
+      title: Response
+      description: >
+        Responses are structured to match Polymarket's CLOB API response format.
+
+
+        Refer to Polymarket's [Order
+        API](https://docs.polymarket.com/developers/CLOB/orders/orders) for more
+        information on the response format.
+      payload:
+        $ref: '#/components/schemas/ResponsePayload'
+  schemas:
+    PlaceOrderRequest:
+      title: Place Single Order Payload
+      type: object
+      required:
+        - path
+        - method
+        - headers
+        - body
+      properties:
+        id:
+          type: string
+          description: Unique request ID.
+        path:
+          type: string
+          enum:
+            - /order
+          default: /order
+        method:
+          type: string
+          enum:
+            - POST
+          default: POST
+        headers:
+          type: object
+          description: Required L2 Headers for Polymarket CLOB API.
+          properties:
+            POLY-API-KEY:
+              type: string
+            POLY-SIGNATURE:
+              type: string
+            POLY-TIMESTAMP:
+              type: string
+            POLY-NONCE:
+              type: string
+        body:
+          type: string
+          description: Order generated by the CLOB client
+    PlaceOrdersRequest:
+      title: Place Multiple Orders Payload
+      type: object
+      required:
+        - path
+        - method
+        - headers
+        - body
+      properties:
+        id:
+          type: string
+          description: Unique request ID.
+        path:
+          type: string
+          enum:
+            - /orders
+          default: /orders
+        method:
+          type: string
+          enum:
+            - POST
+          default: POST
+        headers:
+          type: object
+          description: Required L2 Headers for Polymarket CLOB API.
+          properties:
+            POLY-API-KEY:
+              type: string
+            POLY-SIGNATURE:
+              type: string
+            POLY-TIMESTAMP:
+              type: string
+            POLY-NONCE:
+              type: string
+        body:
+          type: string
+          description: Order array generated by the CLOB client
+    CancelOrderRequest:
+      title: Cancel Single Order Payload
+      type: object
+      required:
+        - path
+        - method
+        - headers
+        - body
+      properties:
+        id:
+          type: string
+          description: Unique request ID.
+        path:
+          type: string
+          enum:
+            - /order
+          default: /order
+        method:
+          type: string
+          enum:
+            - DELETE
+          default: DELETE
+        headers:
+          type: object
+          description: Required L2 Headers for Polymarket CLOB API.
+          properties:
+            POLY-API-KEY:
+              type: string
+            POLY-SIGNATURE:
+              type: string
+            POLY-TIMESTAMP:
+              type: string
+            POLY-NONCE:
+              type: string
+        body:
+          type: object
+          required:
+            - orderID
+          properties:
+            orderID:
+              type: string
+              description: ID of order to cancel
+    CancelOrdersRequest:
+      title: Cancel Multiple Orders Payload
+      type: object
+      required:
+        - path
+        - method
+        - headers
+        - body
+      properties:
+        id:
+          type: string
+          description: Unique request ID.
+        path:
+          type: string
+          enum:
+            - /orders
+          default: /orders
+        method:
+          type: string
+          enum:
+            - DELETE
+          default: DELETE
+        headers:
+          type: object
+          description: Required L2 Headers for Polymarket CLOB API.
+          properties:
+            POLY-API-KEY:
+              type: string
+            POLY-SIGNATURE:
+              type: string
+            POLY-TIMESTAMP:
+              type: string
+            POLY-NONCE:
+              type: string
+        body:
+          type: string
+          description: List of order IDs to cancel.
+    CancelAllOrdersRequest:
+      title: Cancel ALL Orders Payload
+      type: object
+      required:
+        - path
+        - method
+        - headers
+      properties:
+        id:
+          type: string
+          description: Unique request ID.
+        path:
+          type: string
+          enum:
+            - /cancel-all
+          default: /cancel-all
+        method:
+          type: string
+          enum:
+            - DELETE
+          default: DELETE
+        headers:
+          type: object
+          description: Required L2 Headers for Polymarket CLOB API.
+          properties:
+            POLY-API-KEY:
+              type: string
+            POLY-SIGNATURE:
+              type: string
+            POLY-TIMESTAMP:
+              type: string
+            POLY-NONCE:
+              type: string
+    CancelMarketOrdersRequest:
+      title: Cancel Market Orders Payload
+      type: object
+      required:
+        - path
+        - method
+        - headers
+        - body
+      properties:
+        id:
+          type: string
+          description: Unique request ID.
+        path:
+          type: string
+          enum:
+            - /cancel-market-orders
+          default: /cancel-market-orders
+        method:
+          type: string
+          enum:
+            - DELETE
+          default: DELETE
+        headers:
+          type: object
+          description: Required L2 Headers for Polymarket CLOB API.
+          properties:
+            POLY-API-KEY:
+              type: string
+            POLY-SIGNATURE:
+              type: string
+            POLY-TIMESTAMP:
+              type: string
+            POLY-NONCE:
+              type: string
+        body:
+          type: object
+          properties:
+            market:
+              type: string
+              description: Condition ID of the market.
+            asset_id:
+              type: string
+              description: ID of the asset/token.
+    L2Headers:
+      type: object
+      description: Required L2 Headers for Polymarket CLOB API.
+      properties:
+        POLY-API-KEY:
+          type: string
+        POLY-SIGNATURE:
+          type: string
+        POLY-TIMESTAMP:
+          type: string
+        POLY-NONCE:
+          type: string
+    PlaceOrderPayload:
+      type: object
+      required:
+        - order
+        - owner
+        - orderType
+      properties:
+        order:
+          $ref: '#/components/schemas/OrderObject'
+        owner:
+          type: string
+          description: API key of order owner
+        orderType:
+          type: string
+          enum:
+            - FOK
+            - GTC
+            - GTD
+            - FAK
+          description: Order type
+    PostOrder:
+      type: object
+      required:
+        - order
+        - orderType
+        - owner
+      properties:
+        order:
+          $ref: '#/components/schemas/OrderObject'
+        orderType:
+          type: string
+          enum:
+            - FOK
+            - GTC
+            - GTD
+            - FAK
+        owner:
+          type: string
+          description: API key of order owner
+    OrderObject:
+      type: object
+      required:
+        - salt
+        - maker
+        - signer
+        - taker
+        - tokenId
+        - makerAmount
+        - takerAmount
+        - expiration
+        - nonce
+        - feeRateBps
+        - side
+        - signatureType
+        - signature
+      properties:
+        salt:
+          type: integer
+          description: Random salt used to create unique order
+        maker:
+          type: string
+          description: Maker address (funder)
+        signer:
+          type: string
+          description: Signing address
+        taker:
+          type: string
+          description: Taker address (operator)
+        tokenId:
+          type: string
+          description: ERC1155 token ID of conditional token being traded
+        makerAmount:
+          type: string
+          description: Maximum amount maker is willing to spend
+        takerAmount:
+          type: string
+          description: Minimum amount taker will pay the maker in return
+        expiration:
+          type: string
+          description: Unix expiration timestamp
+        nonce:
+          type: string
+          description: Maker's exchange nonce of the order is associated
+        feeRateBps:
+          type: string
+          description: Fee rate basis points as required by the operator
+        side:
+          type: string
+          enum:
+            - BUY
+            - SELL
+          description: Buy or sell enum index
+        signatureType:
+          type: integer
+          description: Signature type enum index
+        signature:
+          type: string
+          description: Hex encoded signature
+    ResponsePayload:
+      type: string

@@ -7,7 +7,8 @@
   },
   "favicon": "/favicon.svg",
   "api": {
-    "openapi": "/api-reference/openapi.json"
+    "openapi": "/api-reference/openapi.json",
+    "asyncapi": "/api-reference/asyncapi.yaml"
   },
   "navigation": {
     "tabs": [
@@ -17,18 +18,28 @@
           {
             "group": "Getting started",
             "pages": [
-              "quickstart"
+              "quickstart",
+              "using-websockets"
             ]
           },
           {
             "group": "HTTP API",
             "pages": [
-              "api-reference/endpoint/place-order",
-              "api-reference/endpoint/cancel-order",
-              "api-reference/endpoint/place-orders",
-              "api-reference/endpoint/cancel-orders",
-              "api-reference/endpoint/cancel-all",
-              "api-reference/endpoint/cancel-market-orders"
+              "api-reference/httpapi/place-order",
+              "api-reference/httpapi/place-orders",
+              "api-reference/httpapi/cancel-order",
+              "api-reference/httpapi/cancel-orders",
+              "api-reference/httpapi/cancel-all",
+              "api-reference/httpapi/cancel-market-orders"
+            ]
+          },
+          {
+            "group": "WebSockets",
+            "pages": [
+              "api-reference/websockets/order",
+              "api-reference/websockets/orders",
+              "api-reference/websockets/cancel-all",
+              "api-reference/websockets/cancel-market-orders"
             ]
           }
         ]

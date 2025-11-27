@@ -1,0 +1,54 @@
+---
+title: 'Using WebSockets'
+description: 'Learn how to use WebSockets for order operations'
+---
+
+While our websocket endpoint is compatible with Polymarket's API, you will have to send JSON messages to the WebSocket to perform order operations.
+
+Currently, the following routes are supported: 
+- `/order`
+- `/orders`
+- `/cancel-all`
+- `/cancel-market-orders`
+
+The message structure wraps a standard HTTP request, allowing you to specify the `path`, `method`, `headers`, and `body` that will be forwarded to Polymarket.
+
+## Example Message Structure:
+
+```JSON
+{
+  "path": "/order",
+  "method": "POST",
+  "headers": {
+    "POLY_ADDRESS": "",
+    "POLY_SIGNATURE": "",
+    "POLY_TIMESTAMP": "",
+    "POLY_API_KEY": "",
+    "POLY_PASSPHRASE": ""
+  },
+  "body": {
+    "order": {
+      "salt": 123456789,
+      "maker": "0x..",
+      "signer": "0x..",
+      "taker": "0x..",
+      "tokenId": "580..",
+      "makerAmount": "1000000",
+      "takerAmount": "1000000",
+      "expiration": "0",
+      "nonce": "0",
+      "feeRateBps": "0",
+      "side": "BUY",
+      "signatureType": 1,
+      "signature": "0x.."
+    },
+    "owner": "05..",
+    "orderType": "FOK"
+  }
+}
+```
+
+Although this documentation separates operations into different channels for clarity (matching Polymarket's REST endpoints), all messages are sent over the same WebSocket connection. 
+
+You must ensure the `path` property in your JSON payload matches the intended operation.
+
