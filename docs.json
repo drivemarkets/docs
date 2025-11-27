@@ -1,11 +1,12 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "maple",
   "name": "drive.markets",
   "colors": {
     "primary": "#FF4000"
+
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.ico",
   "api": {
     "openapi": "/api-reference/openapi.json",
     "asyncapi": "/api-reference/asyncapi.yaml"
